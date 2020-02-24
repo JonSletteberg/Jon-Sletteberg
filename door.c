@@ -2,24 +2,35 @@
 #include "hardware.h"
 #include "door.h"
 #include "time.h"
+#include "definitions.h"
 
-#define DOOR_TIMER 3
+static int door_timer;
 
-void timer() {
-	clock_t before = clock();
-	int trigger = 3000;
-	int msec = 0;
-	while (msec < trigger) {
-		clock_t difference = clock() - before;
-		msec = 1000 * difference / CLOCKS_PER_SEC;
-	}
+void door_timer_start) {
+	door_timer = time(NULL);
 }
 
-void door_open() {
-	hardware_command_door_open(1);
-	if (OBSTRUCTION) {
+int door_timer_expired() {
+	if ((time(NULL) - door_timer) > DOOR_TIMER_BREAK) {
+		return 1
 	}
-	timer();
-	hardware_command_door_open(0);
+	return 0
+}
+
+
+void door_open() {
+	door_timer_start();
+	hardware_command_door_open(1);
+	if (door_timer_expired && !hardware_read_obstruction_signal) {
+		hardware_command_door_open(0);
+		if (previous_state == MOVING_UP && check_for_compatible_orders_above(current_floor)) {
+			state = previous_state;
+		}
+		else if (previous_state == MOVING_DOWN && check_for_compatible_orders_below(current_floor)) {
+			state = previous_state;
+		}
+		else {
+			state = IDLE;
+		}
 	}
 }
